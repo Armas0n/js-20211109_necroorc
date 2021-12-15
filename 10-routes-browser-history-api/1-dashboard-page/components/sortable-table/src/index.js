@@ -29,7 +29,7 @@ export default class SortableTable {
 
   getTemplate() {
     return `
-      <div class="sortable-table sortable-table_loading">
+      <div>
         <div data-element="header" class="sortable-table__header sortable-table__row"></div>
           <div data-element="emptyPlaceholder" class="sortable-table__empty-placeholder">
             <div>

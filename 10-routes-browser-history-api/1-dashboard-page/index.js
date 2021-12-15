@@ -23,16 +23,16 @@ export default class Page {
     return `
       <div class="dashboard full-height flex-column">
         <div class="content__top-panel">
-          <h2 class="page-title">Панель Управления</h2>
-          <div class="rangepicker"></div>
+          <h2 class="page-title">Dashboard</h2>
+          <div data-element="rangePicker" class="rangepicker"></div>
         </div>
         <div class="dashboard__charts">
-          <div class="column-chart dashboard__chart_orders"></div>
-          <div class="column-chart dashboard__chart_sales"></div>
-          <div class="column-chart dashboard__chart_customers"></div>
+          <div data-element="ordersChart" class="column-chart dashboard__chart_orders"></div>
+          <div data-element="salesChart" class="column-chart dashboard__chart_sales"></div>
+          <div data-element="customersChart" class="column-chart dashboard__chart_customers"></div>
         </div>
-        <h3 class="block-title">Лидеры продаж</h3>
-        <div class="sortable-table"></div>
+        <h3 class="block-title">Best sellers</h3>
+        <div data-element="sortableTable" class="sortable-table"></div>
       </div>
 `
   }
@@ -75,16 +75,7 @@ export default class Page {
       })
     }
 
-    const rangePickerContainer = this.element.querySelector('.rangepicker');
-    rangePickerContainer.append(this.components.rangePicker.element);
-    const ordersChartContainer = this.element.querySelector('.dashboard__chart_orders');
-    const salesChartContainer = this.element.querySelector('.dashboard__chart_sales');
-    const customersChartContainer = this.element.querySelector('.dashboard__chart_customers');
-    ordersChartContainer.append(this.components.ordersChart.element);
-    salesChartContainer.append(this.components.salesChart.element);
-    customersChartContainer.append(this.components.customersChart.element);
-    const sortableTableContainer = this.element.querySelector('.sortable-table');
-    sortableTableContainer.replaceWith(this.components.sortableTable.element);
+    this.renderComponents();
   }
 
   async render() {
@@ -92,26 +83,33 @@ export default class Page {
     wrapper.innerHTML = this.getTemplate();
     this.element = wrapper.firstElementChild;
     this.setDefaultRange();
+    this.subElements = this.getSubElements(this.element);
     this.initialize();
-    this.subElements = this.getSubElements();
     this.attachEventListeners();
     return this.element;
   }
 
-  getSubElements() {
-    const result = {};
-    Object.entries(this.components).forEach(([name, instance]) => {
-      result[name] = instance.element;
-    })
+  getSubElements(element) {
+    const elements = element.querySelectorAll('[data-element]');
+    return [...elements].reduce((accumulator, subElement) => {
+      accumulator[subElement.dataset.element] = subElement;
+      return accumulator;
+    }, {})
+  }
 
-    return result;
+  renderComponents() {
+    Object.keys(this.components).forEach((component) => {
+      const container = this.subElements[component];
+      const { element } = this.components[component];
+      container.append(element);
+    })
   }
 
   async updateComponents(range) {
-    await this.components.ordersChart.update(range.detail.from, range.detail.to);
-    await this.components.salesChart.update(range.detail.from, range.detail.to);
-    await this.components.customersChart.update(range.detail.from, range.detail.to);
-    await this.components.sortableTable.sortOnServer({
+    this.components.ordersChart.update(range.detail.from, range.detail.to);
+    this.components.salesChart.update(range.detail.from, range.detail.to);
+    this.components.customersChart.update(range.detail.from, range.detail.to);
+    this.components.sortableTable.sortOnServer({
       from: range.detail.from,
       to: range.detail.to,
     })

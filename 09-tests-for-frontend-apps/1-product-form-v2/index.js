@@ -167,7 +167,7 @@ export default class ProductForm {
   getSubElements(element) {
     const subElements = {};
     const elements = element.querySelectorAll('[data-element]');
-    for (let element of elements) {
+    for (const element of elements) {
       subElements[element.dataset.element] = element;
     }
     return subElements;
@@ -273,7 +273,7 @@ export default class ProductForm {
     })
     fileInput.hidden = true;
     document.body.append(fileInput);
-    fileInput.dispatchEvent(new MouseEvent('click', {bubbles: true}))
+    fileInput.click();
   };
 
   attachEventListeners() {
